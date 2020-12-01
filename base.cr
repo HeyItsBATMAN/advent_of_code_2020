@@ -20,5 +20,5 @@ end
 
 part1time = Benchmark.realtime { puts part1 }.total_milliseconds
 puts "Part 1\t#{part1time}ms"
-part2time = Benchmark.realtime { puts part1 }.total_milliseconds
+part2time = Benchmark.realtime { puts part2 }.total_milliseconds
 puts "Part 2\t#{part2time}ms"
