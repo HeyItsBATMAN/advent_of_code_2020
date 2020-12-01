@@ -1,1 +1,6 @@
+# Ignore binares without extension
+*
+!/**/
+!*.*
+# Ignore inputs
 *.txt
