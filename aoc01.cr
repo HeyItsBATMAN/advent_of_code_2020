@@ -16,5 +16,7 @@ def part2
   } }
 end
 
-puts "Part 1\t" + Benchmark.realtime { puts part1 }.to_s
-puts "Part 2\t" + Benchmark.realtime { puts part2 }.to_s
+part1time = Benchmark.realtime { puts part1 }.total_milliseconds
+puts "Part 1\t#{part1time}ms"
+part2time = Benchmark.realtime { puts part1 }.total_milliseconds
+puts "Part 2\t#{part2time}ms"
