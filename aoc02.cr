@@ -1,11 +1,10 @@
 require "benchmark"
 
 DAY   = PROGRAM_NAME.match(/aoc\d{2}/).not_nil![0]
-INPUT = File.read_lines("#{DAY}.txt")
-  .map { |line|
-    nums, letter, pw = line.split(" ").map(&.strip)
-    {password: pw, letter: letter[0], nums: nums.split("-").map(&.to_i)}
-  }
+INPUT = File.read_lines("#{DAY}.txt").map { |line|
+  m = line.match(/(\d+)-(\d+) (\w): (\w+)/).not_nil!
+  {password: m[4], letter: m[3][0], nums: [m[1], m[2]].map(&.to_i)}
+}
 
 def part1
   INPUT.select { |pw|
