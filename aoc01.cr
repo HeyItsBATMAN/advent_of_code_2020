@@ -21,45 +21,7 @@ def part2
   } }
 end
 
-def threesum
-  input = INPUT.sort
-  silver = false
-  gold = false
-  (0..input.size - 2).each do |i|
-    a = input[i]
-    start = i + 1
-    stop = input.size - 1
-    while start < stop
-      b = input[start]
-      c = input[stop]
-      return if silver && gold
-      if !silver
-        if a + b == TOKEN
-          puts a * b
-          silver = true
-        elsif b + c == TOKEN
-          puts b * c
-          silver = true
-        elsif a + c == TOKEN
-          puts a * c
-          silver = true
-        end
-      end
-      if a + b + c == TOKEN
-        puts a * b * c
-        gold = true
-      elsif a + b + c > TOKEN
-        stop -= 1
-      else
-        start += 1
-      end
-    end
-  end
-end
-
 part1time = Benchmark.realtime { puts part1 }.total_milliseconds
 puts "Part 1\t#{part1time}ms"
 part2time = Benchmark.realtime { puts part2 }.total_milliseconds
 puts "Part 2\t#{part2time}ms"
-threesumtime = Benchmark.realtime { puts threesum }.total_milliseconds
-puts "Threesum\t#{threesumtime}ms"
