@@ -1,32 +1,18 @@
-require "benchmark"
-
 DAY   = PROGRAM_NAME.match(/aoc\d{2}/).not_nil![0]
-INPUT = File.read_lines("#{DAY}.txt").map { |r| r.chars.map { |c| c == '#' } }
+INPUT = File.read_lines("#{DAY}.txt")
 
-def trees(right, down)
-  input = INPUT.clone
-  x, y = 0, 0
-  row_length = input.first.size
-  counter = 0
-  until y >= input.size
-    tree = input[y][x % row_length]
-    counter += 1 if tree
+SLOPES = [[1, 1], [3, 1], [5, 1], [7, 1], [1, 2]]
+TREES  = [0, 0, 0, 0, 0]
 
-    x += right
-    y += down
+width = INPUT.first.size
+INPUT.each_with_index do |line, line_index|
+  SLOPES.each_with_index do |slope, slope_index|
+    x, y = slope
+    next if line_index % y != 0
+    tree = line[(x * line_index) % width]
+    TREES[slope_index] += 1 if tree == '#'
   end
-  counter
 end
 
-def part1
-  trees(3, 1)
-end
-
-def part2
-  [[1, 1], [3, 1], [5, 1], [7, 1], [1, 2]].map { |s| trees(s[0], s[1]).to_u64 }.product
-end
-
-part1time = Benchmark.realtime { puts part1 }.total_milliseconds
-puts "Part 1\t#{part1time}ms"
-part2time = Benchmark.realtime { puts part2 }.total_milliseconds
-puts "Part 2\t#{part2time}ms"
+puts TREES[1]
+puts TREES.map(&.to_u64).product
