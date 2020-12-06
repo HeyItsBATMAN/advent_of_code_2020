@@ -4,13 +4,5 @@ INPUT = File.read("#{DAY}.txt")
   .map(&.split("\n").reject(&.empty?))
   .map(&.map(&.chars))
 
-def part1
-  INPUT.reduce(0) { |acc, group| acc + group.flatten.uniq.size }
-end
-
-def part2
-  INPUT.reduce(0) { |acc, group| acc + group.reduce { |s, val| s & val }.size }
-end
-
-puts part1
-puts part2
+puts INPUT.sum { |group| group.flatten.uniq.size }
+puts INPUT.sum { |group| group.reduce { |s, val| s & val }.size }
