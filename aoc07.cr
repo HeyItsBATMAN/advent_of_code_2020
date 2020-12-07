@@ -1,28 +1,30 @@
 DAY  = PROGRAM_NAME.match(/aoc\d{2}/).not_nil![0]
 BAGS = File.read_lines("#{DAY}.txt").map { |line|
-  line = line
-    .gsub(/bags*/, "").sub("contain", ",").sub(".", ",").sub("no other", ",")
-    .split(",").map(&.strip).reject(&.empty?)
-  bag_name = line.shift
+  # Replace non-data with "," split at "," and remove empty strings
+  # Only data will remain, first item is our parent, the rest is children
+  line = line.rchop.gsub(/contain|no other|bags*/, ",").split(",").map(&.strip).reject(&.empty?)
 
-  contained_bags = line.map { |bag|
-    number, name = bag.strip.split limit: 2
-    {amount: number.to_i, name: name}
-  }
-
-  {bag_name, contained_bags}
+  # Return tuple of parent bag and array of child bags
+  # Child bags contain amount first, name second
+  {line.shift, line.map(&.strip.split(limit: 2))}
 }.to_h
+TARGET = "shiny gold"
 
-def holds_shiny(key : String)
-  return true if key == "shiny gold"
-  current = BAGS[key]?
-  current.nil? ? false : !current.find { |bag| holds_shiny(bag[:name]) }.nil?
+# Find if the parent is our target
+# Otherwise recursively check if any of the child bags is our target
+def holds_shiny(key)
+  key == TARGET ? true : BAGS[key].find { |bag| holds_shiny(bag.last) }
 end
 
-def bags_required(key : String)
-  current = BAGS[key]?
-  current.nil? ? 0 : 1 + current.sum { |bag| bag[:amount] * bags_required(bag[:name]) }
+# Recursively count the total amount of bags required
+# Each children gets multiplied by the amount of times it gets carried by the parent
+def bags_required(key) : Int32
+  1 + BAGS[key].sum { |bag| bag.first.to_i * bags_required(bag.last) }
 end
 
-puts BAGS.keys.select { |bag| bag != "shiny gold" && holds_shiny(bag) }.size
-puts bags_required("shiny gold") - 1
+# Select all paths containing our target starting from any bag
+# except the target bag
+puts BAGS.keys.select { |bag| bag != TARGET && holds_shiny(bag) }.size
+
+# Starting from the target bag, find the total amount of bags being carried
+puts bags_required(TARGET) - 1
