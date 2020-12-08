@@ -5,8 +5,7 @@ INPUT = File.read_lines("#{DAY}.txt")
 def execute_instructions(input)
   index, accumulator, visited = 0, 0, Set(Int32).new
   while true
-    inst = input[index]?
-    return {acc: accumulator, oob: true} if !inst
+    inst = input[index]? || return {acc: accumulator, oob: true}
     return {acc: accumulator, oob: false} if !visited.add?(index)
     accumulator += inst[:amnt] if inst[:cmd] == "acc"
     index += inst[:amnt] - 1 if inst[:cmd] == "jmp"
