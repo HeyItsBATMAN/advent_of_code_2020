@@ -1,96 +1,42 @@
 DAY   = PROGRAM_NAME.match(/aoc\d{2}/).not_nil![0]
 INPUT = File.read_lines("#{DAY}.txt").map(&.chars)
+YSIZE = INPUT.size
+XSIZE = INPUT.first.size
 
-def count_adjacent_occupied(input, y, x)
-  dy, dx = (-1..1), (-1..1)
+def visible_occupied(input, y, x, stop_at_first = true)
   count = 0
-  dy.each { |yy| dx.each { |xx|
-    my, mx = yy + y, xx + x
-    next if my < 0 || my >= input.size
-    next if mx < 0 || mx >= input.first.size
-    next if yy == 0 && xx == 0
-    row = input[my]?
-    next if !row
-    seat = row[mx]?
-    next if !seat
-    count += 1 if seat == '#'
-  } }
-  count
-end
-
-def visible_occupied(input, y, x)
-  dy, dx = (-1..1), (-1..1)
-  count = 0
-  dy.each { |yy| dx.each { |xx|
-    next if yy == 0 && xx == 0
-    distance = 0
-    while true
-      distance += 1
-      my, mx = y + (yy * distance), x + (xx * distance)
-      break if my < 0 || my >= input.size
-      break if mx < 0 || mx >= input.first.size
-      row = input[my]?
-      break if !row
-      seat = row[mx]?
-      break if !seat
-      if seat == '#'
-        count += 1
-        break
-      elsif seat == 'L'
-        break
-      end
+  (-1..1).each { |dy| (-1..1).each { |dx|
+    next if dy == 0 && dx == 0
+    (1..Int32::MAX).each do |distance|
+      my, mx = y + (dy * distance), x + (dx * distance)
+      break if my < 0 || my >= YSIZE || mx < 0 || mx >= XSIZE
+      seat = input[my][mx]
+      count += 1 if seat == '#'
+      break if seat != '.'
+      break if stop_at_first
     end
   } }
   count
 end
 
-def iteration(input)
+def iteration(input, stop_at_first = true, occupied_limit = 4)
   next_iter = input.clone
   input.size.times { |y| input.first.size.times { |x|
     seat = input[y][x]
     next if seat == '.'
-    occupied = count_adjacent_occupied(input, y, x)
+    occupied = visible_occupied(input, y, x, stop_at_first)
     next_iter[y][x] = '#' if seat == 'L' && occupied == 0
-    next_iter[y][x] = 'L' if seat == '#' && occupied >= 4
+    next_iter[y][x] = 'L' if seat == '#' && occupied >= occupied_limit
   } }
   next_iter
 end
 
-def iteration_complex(input)
-  next_iter = input.clone
-  input.size.times { |y| input.first.size.times { |x|
-    seat = input[y][x]
-    next if seat == '.'
-    occupied = visible_occupied(input, y, x)
-    next_iter[y][x] = '#' if seat == 'L' && occupied == 0
-    next_iter[y][x] = 'L' if seat == '#' && occupied >= 5
-  } }
-  next_iter
-end
-
-def part1
-  input = INPUT.clone
-  counter = 0
-  while true
-    counter += 1
-    next_iter = iteration(input)
-    break if next_iter.map(&.join).join == input.map(&.join).join
+def solve(input = INPUT.clone, stop_at_first = true, occupied_limit = 4)
+  while next_iter = iteration(input, stop_at_first, occupied_limit)
+    return input.sum { |row| row.count('#') } if next_iter == input
     input = next_iter
   end
-  input.sum { |row| row.count('#') }
 end
 
-def part2
-  input = INPUT.clone
-  counter = 0
-  while true
-    counter += 1
-    next_iter = iteration_complex(input)
-    break if next_iter.map(&.join).join == input.map(&.join).join
-    input = next_iter
-  end
-  input.sum { |row| row.count('#') }
-end
-
-puts "#{part1} should eq 2093"
-puts "#{part2} should eq 1862"
+puts solve(stop_at_first: true, occupied_limit: 4)
+puts solve(stop_at_first: false, occupied_limit: 5)
