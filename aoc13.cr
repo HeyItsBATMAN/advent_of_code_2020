@@ -12,18 +12,13 @@ def part1(lines = LINES.keys)
 end
 
 def part2(lines = LINES.clone)
-  step = [lines.first.first]
-  lcm = ->{
-    num = 1_u64
-    step.size.times { |i| num = num.lcm(step[i]) }
-    num
-  }
-  timestamp = lcm.call
+  step = lines.first.first
+  timestamp = step
   lines.keys.each do |id|
     until (timestamp + lines[id]) % id == 0
-      timestamp += lcm.call
+      timestamp += step
     end
-    step << id
+    step = step.lcm(id)
   end
   timestamp
 end
