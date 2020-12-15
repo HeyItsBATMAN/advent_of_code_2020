@@ -5,34 +5,26 @@ MEMORY = Hash(Int32, Array(Int32)).new
 turn = 1
 queue = INPUT.clone
 until queue.empty?
-  num = queue.shift?
-  break if !num
+  num = queue.shift
 
-  MEMORY[num] = Array(Int32).new if !MEMORY[num]?
-  if MEMORY[num].size == 1 # first time repeated
-    num = 0
-  elsif MEMORY[num].size >= 2 # multiple times repeated
-    grp = MEMORY[num].last(2)
+  grp = MEMORY[num]?
+  if grp && grp.size > 0
+    grp = grp.last(2)
     num = grp.last - grp.first
   end
 
-  MEMORY[num] = Array(Int32).new if !MEMORY[num]?
-  MEMORY[num] << turn
+  mem = MEMORY[num]?
+  mem << turn if mem
+  MEMORY[num] = [turn] if !mem
+
   queue << num if queue.size == 0
 
-  print "Turn:#{turn}\r"
-
   if turn == 2020
-    puts
     puts "Turn:#{turn}\tSpoken:#{num}"
-    break
   elsif turn == 30000000
-    puts
     puts "Turn:#{turn}\tSpoken:#{num}"
     break
   end
 
-  # puts "Turn:#{turn}\tSpoken:#{num}"
-  # a = gets
   turn += 1
 end
