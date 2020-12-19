@@ -1,57 +1,30 @@
 DAY   = PROGRAM_NAME.match(/aoc\d{2}/).not_nil![0]
 INPUT = File.read_lines("#{DAY}.txt")
-
-RULES = Hash(String, Array(String)).new
-MSGS  = Array(String).new
-
-at_rules = true
-INPUT.each do |line|
-  if line.empty?
-    at_rules = !at_rules
-    next
-  end
-
-  if at_rules
-    key, value = line.tr("\\\"", "").split(": ")
-    RULES[key] = value.split(" | ")
-  else
-    MSGS << line
-  end
-end
+MSGS  = INPUT.reject { |line| line.includes?(":") && line.empty? }
+RULES = INPUT.select(&.includes?(":")).map(&.tr("\\\"", "").split(": "))
+  .map { |rule_pair| {rule_pair[0], rule_pair[1].split(" | ")} }.to_h
 
 def resolve_rule(key)
   return key if key == "a" || key == "b"
   rule = RULES[key]
-  rule = rule.map { |sub|
-    sub.split(" ").map { |slot|
-      resolve_rule(slot)
-    }.join
-  }.join("|")
+  rule = rule.map { |s| s.split.map { |si| resolve_rule(si) }.join }.join("|")
   rule.size > 1 ? "(#{rule})" : rule
 end
 
 # Part 1
 root_rule = resolve_rule("0")
 regex = /^#{root_rule}$/
-puts MSGS.count { |line| line.matches?(regex) }
+puts MSGS.count(&.matches?(regex))
 
 # Part 2
-rule8 = resolve_rule("8")
-rule11 = resolve_rule("11")
-rule31 = resolve_rule("31")
-rule42 = resolve_rule("42") + "+"
-root_rule = root_rule.gsub(rule8, rule42)
+rules = [8, 11, 31, 42].map { |key| {key, resolve_rule(key.to_s)} }.to_h
 
 inner = "((42)X(31))?"
-outer = "((42)X(31))"
-new_rule11 = outer
-13.times do
-  new_rule11 = new_rule11.sub("X", inner)
-end
-new_rule11 = new_rule11.sub("X", "")
-new_rule11 = new_rule11.gsub("(42)", rule42)
-new_rule11 = new_rule11.gsub("(31)", rule31)
+r11 = "((42)X(31))"
+# After testing: Recursion occurs no more than 3 times
+3.times { r11 = r11.sub("X", inner) }
+r11 = r11.sub("X", "").gsub("(42)", rules[42]).gsub("(31)", rules[31])
 
-root_rule = root_rule.gsub(rule11, new_rule11)
+root_rule = root_rule.gsub(rules[8], rules[42] + "+").gsub(rules[11], r11)
 regex = /^#{root_rule}$/
-puts MSGS.count { |line| line.matches?(regex) }
+puts MSGS.count(&.matches?(regex))
