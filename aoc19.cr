@@ -11,20 +11,23 @@ def resolve_rule(key)
   rule.size > 1 ? "(#{rule})" : rule
 end
 
+rules = [0, 8, 11, 31, 42].map { |key| {key, resolve_rule(key.to_s)} }.to_h
+
 # Part 1
-root_rule = resolve_rule("0")
-regex = /^#{root_rule}$/
+regex = /^#{rules[0]}$/
 puts MSGS.count(&.matches?(regex))
 
 # Part 2
-rules = [8, 11, 31, 42].map { |key| {key, resolve_rule(key.to_s)} }.to_h
+rule, final_rule, depth = "((42)X(31))", Regex.new(""), 0
+begin # repeat until regex gets too large
+  while depth += 1
+    r11 = rule
+    depth.times { r11 = r11.sub("X", rule + "?") }
+    r11 = r11.sub("X", "").gsub("(42)", rules[42]).gsub("(31)", rules[31])
+    next_rule = rules[0].gsub(rules[8], rules[42] + "+").gsub(rules[11], r11)
+    final_rule = /^#{next_rule}$/
+  end
+rescue
+end
 
-inner = "((42)X(31))?"
-r11 = "((42)X(31))"
-# After testing: Recursion occurs no more than 3 times
-3.times { r11 = r11.sub("X", inner) }
-r11 = r11.sub("X", "").gsub("(42)", rules[42]).gsub("(31)", rules[31])
-
-root_rule = root_rule.gsub(rules[8], rules[42] + "+").gsub(rules[11], r11)
-regex = /^#{root_rule}$/
-puts MSGS.count(&.matches?(regex))
+puts MSGS.count(&.matches?(final_rule))
