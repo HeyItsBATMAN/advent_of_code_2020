@@ -1,9 +1,6 @@
 DAY   = PROGRAM_NAME.match(/aoc\d{2}/).not_nil![0]
-INPUT = File.read_lines("#{DAY}.txt").map { |line|
-  ingredients, allergen_text = line.sub(")", "").split(" (")
-  allergens = allergen_text.sub("contains ", "").split(", ")
-  {ingredients.split(" "), allergens}
-}
+INPUT = File.read_lines("#{DAY}.txt")
+  .map(&.tr("(),", "").split(" contains ").map(&.split))
 
 algs_map = Hash(String, Array(String)).new
 all_ings = Set(String).new
@@ -15,7 +12,7 @@ INPUT.each do |line|
     algs_map[al] = other_ings & ings
   end
 end
-algs_map.values.each { |ings| all_ings = all_ings - ings }
+algs_map.values.each { |ings| all_ings -= ings }
 
 # Part 1
 puts INPUT.sum { |line| all_ings.sum { |ing| line.first.count(ing) } }
@@ -27,7 +24,6 @@ until algs_map.empty?
     canon_danger[ing.first] = al
     algs_map.delete(al)
   end
-
   algs_map.each { |al, ing| algs_map[al] = ing - canon_danger.keys }
 end
 puts canon_danger.to_a.sort_by(&.last).map(&.first).join(",")
