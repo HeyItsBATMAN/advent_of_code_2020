@@ -35,11 +35,41 @@ def part1
 end
 
 def part2
-  input = INPUT.clone
-  input.each do |line|
+  input = Deque.new(INPUT.clone)
+  (10..1_000_000).each { |num| input << num }
+  lowest_cup, highest_cup = 1, 1_000_000
+  hold = Deque(Int32).new
+  input.rotate!(-1)
+  puts
+  10_000_000.times do |move|
+    print "#{move}\r"
+    input.rotate!(1)
+    current_cup = input.first
+    input.rotate!(1)
+    3.times { hold << input.shift }
+    next_cup = current_cup - 1
+    until input.find { |cup| cup == next_cup }
+      next_cup -= 1
+      next_cup = highest_cup if next_cup < lowest_cup
+    end
+    rots = input.index(next_cup)
+    raise "No rots found" if !rots
+    input.rotate!(rots + 1)
+    3.times { input.unshift(hold.pop) }
+    until input.first == current_cup
+      input.rotate!(-1)
+    end
+    hold.clear
   end
-  input
+  puts
+  until input.first == 1
+    input.rotate!(-1)
+  end
+  input.shift
+  star_cups = input.first(2)
+  puts star_cups
+  star_cups.map(&.to_u64).product
 end
 
 puts part1
-# puts part2
+puts part2
