@@ -1,74 +1,54 @@
 DAY   = PROGRAM_NAME.match(/aoc\d{2}/).not_nil![0]
 INPUT = File.read_lines("#{DAY}.txt").first.chars.map(&.to_i)
 
+def solve(map, rounds)
+  current_cup, max, held_cups = INPUT.first, map.values.max, Array(Int32).new
+  rounds.times do
+    # hold cups
+    head = map[current_cup]
+    3.times do
+      held_cups << head
+      head = map[head]
+    end
+
+    # find next valid
+    next_cup = current_cup == 1 ? max : current_cup - 1
+    while held_cups.includes?(next_cup)
+      next_cup = next_cup == 1 ? max : next_cup - 1
+    end
+
+    # swaps
+    temp = map[next_cup]
+    map[next_cup] = held_cups.first
+    map[current_cup] = map[held_cups.last]
+    map[held_cups.last] = temp
+
+    # prepare for next round
+    current_cup = map[current_cup]
+    held_cups.clear
+  end
+  map
+end
+
 def part1
-  input = Deque.new(INPUT.clone)
-  lowest_cup, highest_cup = input.min, input.max
-  hold = Deque(Int32).new
-  input.rotate!(-1)
-  100.times do
-    input.rotate!(1)
-    current_cup = input.first
-    input.rotate!(1)
-    3.times { hold << input.shift }
-    next_cup = current_cup - 1
-    until input.find { |cup| cup == next_cup }
-      next_cup -= 1
-      if next_cup < lowest_cup
-        next_cup = highest_cup
-      end
-    end
-    rots = input.index(next_cup)
-    raise "No rots found" if !rots
-    input.rotate!(rots + 1)
-    3.times { input.unshift(hold.pop) }
-    until input.first == current_cup
-      input.rotate!(-1)
-    end
-    hold.clear
+  map = INPUT.clone.push(INPUT.first).each_cons(2).to_h
+  map = solve(map, 100)
+  current_cup = map[1]
+  result = [] of Int32
+  until current_cup == 1
+    result << current_cup
+    current_cup = map[current_cup]
   end
-  until input.first == 1
-    input.rotate!(-1)
-  end
-  input.shift
-  input.join
+  result.join
 end
 
 def part2
-  input = Deque.new(INPUT.clone)
-  (10..1_000_000).each { |num| input << num }
-  lowest_cup, highest_cup = 1, 1_000_000
-  hold = Deque(Int32).new
-  input.rotate!(-1)
-  puts
-  10_000_000.times do |move|
-    print "#{move}\r"
-    input.rotate!(1)
-    current_cup = input.first
-    input.rotate!(1)
-    3.times { hold << input.shift }
-    next_cup = current_cup - 1
-    until input.find { |cup| cup == next_cup }
-      next_cup -= 1
-      next_cup = highest_cup if next_cup < lowest_cup
-    end
-    rots = input.index(next_cup)
-    raise "No rots found" if !rots
-    input.rotate!(rots + 1)
-    3.times { input.unshift(hold.pop) }
-    until input.first == current_cup
-      input.rotate!(-1)
-    end
-    hold.clear
-  end
-  puts
-  until input.first == 1
-    input.rotate!(-1)
-  end
-  input.shift
-  star_cups = input.first(2)
-  puts star_cups
-  star_cups.map(&.to_u64).product
+  map = (INPUT + (10..1_000_000).to_a).each_cons(2).to_h
+  map[1_000_000] = INPUT.first
+  map = solve(map, 10_000_000)
+  first = map[1].to_u64
+  second = map[first].to_u64
+  first * second
 end
 
 puts part1
