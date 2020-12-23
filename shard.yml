@@ -1,6 +1,0 @@
-name: AoC2020
-version: 0.1.0
-
-dependencies:
-  linked_list:
-    git: https://github.com/abvdasker/crystal-linked-list.git
